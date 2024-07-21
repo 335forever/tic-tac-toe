@@ -2,15 +2,27 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import {State} from '@/app/lib/definitions';
+import {State, Request} from '@/app/lib/definitions';
 import {Overlay} from '@/app/ui/overlay';
 
 interface FindingProps {
     className?: string;
-    setState: ({now}: State) => void;
+    setState: (state: State) => void;
+    sendRequest: ({action,data}: Request) => void;
 }
 
-export function Finding({className, setState} : FindingProps) {
+export function Finding({className, setState, sendRequest} : FindingProps) {
+    const handleExitFindAction = () => {
+        setState('dashboard');
+
+        const request : Request = {
+            action : 'exit_find',
+            data : {}
+        }
+
+        sendRequest(request);
+    }
+    
     return (
         <>
             <Overlay/>
@@ -21,8 +33,9 @@ export function Finding({className, setState} : FindingProps) {
                     alt="Searching" 
                     width="600" 
                     height="600"
+                    unoptimized
                 />
-                <button className="absolute top-3/4 bg-blue-200 p-2 rounded-lg" onClick={()=>setState({now:'dashboard'})}>Stop Finding</button>
+                <button className="absolute top-3/4 bg-blue-200 p-2 rounded-lg" onClick={handleExitFindAction}>Stop Finding</button>
             </div>
         </>
     );

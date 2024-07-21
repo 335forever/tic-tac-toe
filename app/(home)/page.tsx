@@ -4,25 +4,34 @@ import {useEffect, useState} from 'react'
 import {LoginForm} from '@/app/ui/login/loginForm';
 import {DashBoard} from '@/app/ui/dashboard/dashboard';
 import {Finding} from '@/app/ui/finding/finding';
-import {Notification} from '@/app/ui/notification';
-import {State, PlayerInfor, Message} from '@/app/lib/definitions';
+import {Playing} from '@/app/ui/playing/playing';
+import {Loading} from '@/app/ui/loading';
+import {State, PlayerInfor, MatchStatus } from '@/app/lib/definitions';
 import { useWebSocket } from '@/app/lib/utils';
 
 export default function Page() {
-  const [state, setState] = useState<State>({now: 'login'});
+  const [state, setState] = useState<State>('login');
   const [content, setContent] = useState<React.ReactNode>();
 
   const { isConnected, message, sendRequest } = useWebSocket('ws://localhost:8080');
   
-  const [yourInfor, setYourInfor] = useState<PlayerInfor>({id:'',name:'', avatar:'',starNum:0});
-  const [onlineNum, setOnlineNum] = useState<number>(0)
+  const [yourInfor, setYourInfor] = useState<PlayerInfor>();
+  const [enemyInfor, setEnemyInfor] = useState<PlayerInfor>();
 
+  const [matchStatus, setMatchStatus] = useState<MatchStatus>();
+  
+  const [onlineNum, setOnlineNum] = useState<number>(0);
+
+
+  // Nghe thong tin tu server
   useEffect(() => {
-    if (message) console.log('Server send:', message)
+    if (message) console.log('Server send:', message.type);
+    
     // Cap nhat so luong nguoi dang online
     if (message && message.type == 'online_num') {
       setOnlineNum(message.data.num || 0);
-    }
+    };
+    
     // Nhan thong tin dang nhap tu server
     if (message && message.type == 'assign') {
       
@@ -34,34 +43,72 @@ export default function Page() {
       }
       
       setYourInfor(inforFromServer);
-      setState({now:'dashboard'});
-    }
+      setState('dashboard');
+    };
+    
+    // Bat dau tran dau
+    if (message && message.type == 'match_start') {
+      const {matchId, turn , tableSize , move , tick} = {...message.data.matchStatus}
+
+      const {id, name, avatar, starNum} = {...message.data.enemyInfor}
       
+      if (matchId && turn && tableSize && move && tick && id && name && avatar && starNum) {
+        const newMatchStatus : MatchStatus = {matchId, turn , tableSize , move , tick};
+        setMatchStatus(newMatchStatus);
+        
+        const enemyInfor : PlayerInfor = {id, name, avatar, starNum};
+        setEnemyInfor(enemyInfor);
+        
+        setState('playing');
+      }
+       
+    };
+
     
   }, [message]);
 
 
   // Chuyen trang thai
   useEffect(() => {
-    if (state.now == 'login')  
+    if (state == 'login')  
       setContent(
         <LoginForm 
+          setState={setState}
           sendRequest={sendRequest}
         />
       );
     
-    if (state.now == 'dashboard') 
-      setContent(
+    if (state == 'dashboard') {
+      if (yourInfor) setContent(
         <DashBoard 
           yourInfor={yourInfor}
           setState={setState}
+          sendRequest={sendRequest}
         />
       );
-    if (state.now == 'finding')
+    }
+
+    if (state == 'finding')
       setContent(
         <Finding
           setState={setState}
+          sendRequest={sendRequest}
         />
+      );
+    if (state == 'playing') {
+      if (yourInfor && enemyInfor && matchStatus) setContent(
+        <Playing
+          setState={setState}
+          sendRequest={sendRequest}
+          yourInfor={yourInfor}
+          enemyInfor={enemyInfor}
+          matchStatus={matchStatus}
+        />
+      );
+    }
+    if (state == 'loading')
+        setContent(
+          <Loading/>
       );
   }, [state]);
 

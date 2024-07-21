@@ -48,3 +48,58 @@ button:active {
   filter: blur(8px);
   z-index: -1;
 }
+
+.charactor {
+  width: 20vw;
+  height: 20vw;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  background-color: rgb(205, 204, 204);
+}
+
+.charactor::before {
+  position: absolute;
+  content: "";
+  width: 50%;
+  height: 140%;
+  transform: rotate(-45deg);
+}
+
+.charactor.animate::before {
+  animation: ani2 3s linear infinite;
+}
+.me::before {
+  /* background-color: rgb(97, 219, 99); */
+  background: linear-gradient(to right, #006400, #228B22, #32CD32, #7CFC00, #ADFF2F);
+}
+
+.enemy::before {
+  /* background-color: rgb(235, 99, 103); */
+  background: linear-gradient(to right, #8B0000, #B22222, #FF0000, #FF6347, #FF7F50, #FFA07A, #FFDAB9);
+}
+
+.charactor::after {
+  position: absolute;
+  content: "";
+  inset: 1vw;
+  background-color: rgb(205, 204, 204);
+  border-radius: 5px;
+}
+
+.charactor > * {
+  z-index: 50;
+  font-size: auto;
+}
+
+@keyframes ani2 {
+  from {
+      transform: rotate(-45deg);
+  }
+  to {
+      transform: rotate(315deg);
+  }
+}

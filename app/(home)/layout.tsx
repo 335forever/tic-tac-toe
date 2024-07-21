@@ -17,7 +17,7 @@ export default function RootLayout({
       <body className="my-bg">
         <main className="h-screen flex flex-col">
           <HeaderImg
-            className="mx-auto mb-4"
+            className="fixed w-[800px] max-w-full left-1/2  transform -translate-x-1/2"
           />
 
           {children}
