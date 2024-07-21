@@ -27,20 +27,26 @@ export type Request = {
   data : {}
 };
 
-export type size = {
+export type Size = {
   m : number;
   n : number;
 }
 
-export type position = {
+export type Position = {
   x : number;
   y : number;
 }
 
+export type Move = {
+  playerId : string;
+  position : Position;
+  mark : 'X' | 'O';
+}
+
 export type MatchStatus = {
   matchId : string;
-  turn : string;
-  tableSize : size;
-  move : position[];
-  tick : 'X' | 'O';
+  tableSize : Size;
+  nextTurn : string;
+  nextMark : 'X' | 'O';
+  moved : Move[];
 }

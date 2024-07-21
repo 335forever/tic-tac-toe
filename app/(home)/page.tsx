@@ -10,6 +10,7 @@ import {State, PlayerInfor, MatchStatus } from '@/app/lib/definitions';
 import { useWebSocket } from '@/app/lib/utils';
 
 export default function Page() {
+  console.log('Render Page')
   const [state, setState] = useState<State>('login');
   const [content, setContent] = useState<React.ReactNode>();
 
@@ -48,12 +49,12 @@ export default function Page() {
     
     // Bat dau tran dau
     if (message && message.type == 'match_start') {
-      const {matchId, turn , tableSize , move , tick} = {...message.data.matchStatus}
+      const {matchId, tableSize, nextTurn , nextMark , moved} = {...message.data.matchStatus}
 
       const {id, name, avatar, starNum} = {...message.data.enemyInfor}
       
-      if (matchId && turn && tableSize && move && tick && id && name && avatar && starNum) {
-        const newMatchStatus : MatchStatus = {matchId, turn , tableSize , move , tick};
+      if (matchId && tableSize && nextTurn && nextMark && moved && id && name && avatar && starNum) {
+        const newMatchStatus : MatchStatus = {matchId, tableSize, nextTurn , nextMark , moved};
         setMatchStatus(newMatchStatus);
         
         const enemyInfor : PlayerInfor = {id, name, avatar, starNum};
@@ -96,13 +97,13 @@ export default function Page() {
         />
       );
     if (state == 'playing') {
-      if (yourInfor && enemyInfor && matchStatus) setContent(
+      if (1) setContent(
         <Playing
           setState={setState}
           sendRequest={sendRequest}
-          yourInfor={yourInfor}
-          enemyInfor={enemyInfor}
-          matchStatus={matchStatus}
+          yourInfor={yourInfor || {name:'',id:'0',avatar:'01',starNum:100}}
+          enemyInfor={enemyInfor || {name:'',id:'1',avatar:'02',starNum:100}}
+          matchStatus={matchStatus || {tableSize:{m:5,n:5},matchId:'1',nextMark:'X',nextTurn:'1',moved:[{playerId:'1',position:{x:2,y:2},mark:'X'},{playerId:'1',position:{x:1,y:2},mark:'O'}]}}
         />
       );
     }
