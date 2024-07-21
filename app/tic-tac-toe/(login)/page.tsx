@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, FormEvent} from 'react';
+import React, { useState, useEffect, FormEvent, useRef} from 'react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { generateRandomSelection } from '@/app/lib/utils';
 import { Request, State } from '@/app/lib/definitions';
 import {Overlay} from '@/app/ui/overlay';
+import { useWebSocket } from '@/app/lib/hooks/useWebSocket';
 
 interface LoginFormProps {
     className?: string;
@@ -13,34 +14,31 @@ interface LoginFormProps {
     sendRequest: ({action,data}: Request) => void;
   }
 
-export function LoginForm( { className,  setState, sendRequest}: LoginFormProps) {
-    
-    const [playerNameInput, setPlayerNameInput] = useState('');
+export default function Page( { className,  setState, sendRequest }: LoginFormProps) {
+    console.log('Render login page')
+
     const [avatarImgIndex, setAvatarImgIndex] = useState<string[]>([]);
     const [selectedImgIndex, setSelectedImgIndex] = useState('');
+    const playerNameInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const initialAvatarImgIndex = generateRandomSelection();
-        setAvatarImgIndex(initialAvatarImgIndex);
-        
-        setSelectedImgIndex(initialAvatarImgIndex[0]);
+        setAvatarImgIndex(generateRandomSelection());
+        setSelectedImgIndex(avatarImgIndex[0]);
     }, []);
 
 
-    const handleSubmit = async (event: FormEvent) => {
+    const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
         
         const request : Request = {
             action : 'login',
             data : {
-                playerName: playerNameInput,
+                playerName: playerNameInputRef.current?.value || '',
                 playerAvatar: selectedImgIndex
             }
         }
         
-        sendRequest(request);
-        
-        setState('loading');
+        console.log(request);
     };
 
     return (
@@ -52,14 +50,14 @@ export function LoginForm( { className,  setState, sendRequest}: LoginFormProps)
                 </div>
                 
                 <form className="flex flex-col" onSubmit={handleSubmit}>
-                    <label className="mb-5" htmlFor="name">Your Name:<input className="ml-4" type="text" id="name" name="name" required onChange={(event)=>{setPlayerNameInput(event.target.value)}}/></label>
+                    <label className="mb-5" htmlFor="name">Your Name:<input className="ml-4" type="text" id="name" name="name" required ref={playerNameInputRef}/></label>
                     
                     <label>Select Avatar:</label>
                     <div className="grid grid-cols-3 justify-items-center gap-2 w-fit mx-auto">
                         {
                             avatarImgIndex.map((index) => {
                                 return (
-                                    <div className={clsx('bg-white rounded-xl p-2 border-4', {'border-4 border-orange-400' : index == selectedImgIndex})}>
+                                    <div key={index} className={clsx('bg-white rounded-xl p-2 border-4', {'border-4 border-orange-400' : index == selectedImgIndex})}>
                                         <Image
                                             key={index}
                                             src={"/asset/avatar-icon/"+ index + ".png"}
@@ -68,6 +66,7 @@ export function LoginForm( { className,  setState, sendRequest}: LoginFormProps)
                                             height="80"
                                             className=""
                                             onClick={() => setSelectedImgIndex(index)}
+                            
                                             draggable="false"
                                         />
                                     </div>

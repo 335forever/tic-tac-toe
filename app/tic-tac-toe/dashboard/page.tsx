@@ -13,7 +13,7 @@ interface DashBoardProps {
     sendRequest: ({action,data}: Request) => void;
 }
 
-export function DashBoard({className, yourInfor, setState, sendRequest} : DashBoardProps) {
+export default function Page({className, yourInfor, setState, sendRequest} : DashBoardProps) {
     const handleFindAction = () =>{
         setState('finding');
 
