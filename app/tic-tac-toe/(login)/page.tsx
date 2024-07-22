@@ -1,31 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, FormEvent, useRef} from 'react';
+import React, { useEffect, FormEvent, useRef} from 'react';
 import clsx from 'clsx';
-import Image from 'next/image';
-import { generateRandomSelection } from '@/app/lib/utils';
-import { Request, State } from '@/app/lib/definitions';
-import {Overlay} from '@/app/ui/overlay';
+import { Request, PlayerInfor } from '@/app/lib/definitions';
+import { Overlay } from '@/app/ui/overlay';
 import { useWebSocket } from '@/app/lib/hooks/useWebSocket';
+import { useInfor } from '@/app/lib/hooks/useInfor';
+import { Selection } from '@/app/ui/login/selection';
+import { useRouter } from 'next/navigation';
 
-interface LoginFormProps {
-    className?: string;
-    setState: (state: State) => void;
-    sendRequest: ({action,data}: Request) => void;
-  }
-
-export default function Page( { className,  setState, sendRequest }: LoginFormProps) {
-    console.log('Render login page')
-
-    const [avatarImgIndex, setAvatarImgIndex] = useState<string[]>([]);
-    const [selectedImgIndex, setSelectedImgIndex] = useState('');
+export default function Page() {
+    const router = useRouter();
+    
+    const selectedImgIndexRef = useRef('');
     const playerNameInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        setAvatarImgIndex(generateRandomSelection());
-        setSelectedImgIndex(avatarImgIndex[0]);
-    }, []);
-
+    const { sendRequest, message } = useWebSocket();
+    const { setYourInfor } = useInfor();
 
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
@@ -34,13 +25,26 @@ export default function Page( { className,  setState, sendRequest }: LoginFormPr
             action : 'login',
             data : {
                 playerName: playerNameInputRef.current?.value || '',
-                playerAvatar: selectedImgIndex
+                playerAvatar: selectedImgIndexRef.current
             }
         }
         
-        console.log(request);
+        sendRequest(request);
     };
 
+    useEffect(()=> {
+        if (message.type == 'assign' && message.data.id && message.data.playerName && message.data.playerAvatar &&  message.data.starNum) {
+            const yourInforFromServer : PlayerInfor = {
+                id : message.data.id,
+                name : message.data.playerName,
+                avatar : message.data.playerAvatar,
+                starNum : message.data.starNum
+            }
+            setYourInfor(yourInforFromServer);
+            router.replace('/tic-tac-toe/dashboard');
+        }
+    },[message])
+    
     return (
         <>
             <Overlay/>
@@ -53,27 +57,7 @@ export default function Page( { className,  setState, sendRequest }: LoginFormPr
                     <label className="mb-5" htmlFor="name">Your Name:<input className="ml-4" type="text" id="name" name="name" required ref={playerNameInputRef}/></label>
                     
                     <label>Select Avatar:</label>
-                    <div className="grid grid-cols-3 justify-items-center gap-2 w-fit mx-auto">
-                        {
-                            avatarImgIndex.map((index) => {
-                                return (
-                                    <div key={index} className={clsx('bg-white rounded-xl p-2 border-4', {'border-4 border-orange-400' : index == selectedImgIndex})}>
-                                        <Image
-                                            key={index}
-                                            src={"/asset/avatar-icon/"+ index + ".png"}
-                                            alt=""
-                                            width="80"
-                                            height="80"
-                                            className=""
-                                            onClick={() => setSelectedImgIndex(index)}
-                            
-                                            draggable="false"
-                                        />
-                                    </div>
-                                );
-                            })
-                        }
-                    </div>
+                    <Selection selectedImgIndexRef={selectedImgIndexRef}/>
 
                     <button className="w-1/2 h-8 mx-auto mt-3 bg-red-200" type="submit">Let's Go</button>
                 </form>

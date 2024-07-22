@@ -1,13 +1,14 @@
 export type State = 'login' | 'dashboard' | 'finding' | 'result' | 'playing' | 'loading';
 
 export interface PlayerInfor {
-  id: string;
-  name: string;
-  avatar: string;
-  starNum: number;
+  id?: string | undefined;
+  name?: string | undefined;
+  avatar?: string | undefined;
+  starNum?: number | undefined;
 };
 
 export type Message = {
+  id : string;
   type : string;
   data : {
     num?: number;
@@ -43,10 +44,13 @@ export type Move = {
   mark : 'X' | 'O';
 }
 
+type tick = 'X' | 'O';
+
 export type MatchStatus = {
-  matchId : string;
-  tableSize : Size;
-  nextTurn : string;
-  nextMark : 'X' | 'O';
-  moved : Move[];
+  matchId?: string | undefined;
+  tableSize?: Size | undefined;
+  nextTurn?: string | undefined;
+  nextMark?: tick | undefined;
+  moved?: Move[] | undefined ;
+  winner?: string | undefined;
 }

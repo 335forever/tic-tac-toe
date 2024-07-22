@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import {Overlay} from '@/app/ui/overlay';
 
-export function Loading() {
+export default function Page() {
     return (
         <>
             <Overlay/>

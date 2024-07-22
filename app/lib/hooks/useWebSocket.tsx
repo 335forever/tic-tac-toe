@@ -1,11 +1,9 @@
-'use client'
-
-import React, { useEffect, useState, useContext, createContext, ReactNode } from 'react';
+import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
 import { Request, Message } from '@/app/lib/definitions';
 
 
 interface WebSocketContextType {
-  message : Message | undefined;
+  message : Message;
   isConnected: boolean;
   sendRequest: (request: Request) => void;
 }
@@ -15,8 +13,8 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [message, setMessage] = useState<Message>();
-  
+  const [message, setMessage] = useState<Message>({id:'',type:'',data:{}});
+
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080');
 
@@ -28,10 +26,12 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
     ws.onmessage = (event) => {
         const parsedMessage = JSON.parse(event.data);
         const formatedMessage : Message = {
+            id : parsedMessage.id,
             type : parsedMessage.type,
             data : parsedMessage.data
         }
         setMessage(formatedMessage);
+        console.log('Server send:', formatedMessage.type)
     };
 
     ws.onclose = () => {
@@ -40,8 +40,8 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
     };
 
     ws.onerror = (error) => {
-        console.error('WebSocket Error:', error);
-        setIsConnected(false);
+      console.error('WebSocket Error:', error);
+      setIsConnected(false);
     };
 
     setSocket(ws);
@@ -53,9 +53,9 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const sendRequest = (request: Request) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(request));
+      socket.send(JSON.stringify(request));
     } else {
-        console.error('WebSocket is not open. Cannot send request.');
+      console.error('WebSocket is not open. Cannot send request.');
     }
 };
 

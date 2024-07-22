@@ -12,17 +12,18 @@ interface TableProps {
     playerInfor?: PlayerInfor;
     situation?: 'me' | 'enemy';
     animation?: boolean;
-    matchStatus: MatchStatus;
+    matchStatus?: MatchStatus;
 }
 
 export function Table({matchStatus, situation, playerInfor, animation} : TableProps) {
     const moved = new Map<string,string>() ;
-    matchStatus.moved.forEach((move)=>{
+    matchStatus?.moved?.forEach((move)=>{
         const position = move.position.x + '_' + move.position.y;
         moved.set(position,move.mark);
     });
 
-    const createTable = (m : number, n : number) => {
+    const createTable = (m : number | undefined, n : number | undefined) => {
+        if (!m || !n) return;
         const table = [];
         for (let i = 0; i < m; i++) {
             const row = [];
@@ -32,7 +33,7 @@ export function Table({matchStatus, situation, playerInfor, animation} : TablePr
                 const cell = (
                     <TableCell
                       key={position}
-                      src={src}
+                      mark={mark}
                     />
                   );
                 row.push(cell);
@@ -47,7 +48,7 @@ export function Table({matchStatus, situation, playerInfor, animation} : TablePr
     
     return ( 
         <div className="flex flex-col justify-center items-center border-4 border-orange-400 rounded-md">
-            {createTable(matchStatus.tableSize.m, matchStatus.tableSize.n)}
+            {createTable(matchStatus?.tableSize?.m, matchStatus?.tableSize?.n)}
         </div>
     );
 }
